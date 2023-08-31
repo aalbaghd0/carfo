@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carfo - Car Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333333;
+        }
+        #image-preview {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            display: none;
+        }
+        #prediction {
+            color: #333333;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        function predict() {
+            var formData = new FormData();
+            var imageFile = document.getElementById("image").files[0];
+            formData.append("image", imageFile);
+
+            fetch("http://192.168.1.105:5001/classify", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                var predictionElement = document.getElementById("prediction");
+                predictionElement.textContent = "Predicted Car: " + data.class + " (Confidence: " + (data.confidence * 100).toFixed(2) + "%)";
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                var predictionElement = document.getElementById("prediction");
+                predictionElement.textContent = "Error predicting the car. Please try again.";
+            });
+        }
+
+        function showImagePreview(input) {
+            var imagePreview = document.getElementById("image-preview");
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = "block";
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Carfo - Car Classifier</h1>
+        <input type="file" id="image" accept="image/*" onchange="showImagePreview(this)">
+        <img id="image-preview">
+        <button onclick="predict()">Predict</button>
+        <p id="prediction"></p>
+    </div>
+</body>
+</html>
